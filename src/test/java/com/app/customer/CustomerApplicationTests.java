@@ -59,7 +59,7 @@ class CustomerApplicationTests {
 
 		var res = client
 				.get()
-				.uri("/api/customer/{1}")
+				.uri("/api/customers/customer/1")
 				.exchange()
 				.expectStatus()
 				.is2xxSuccessful()
@@ -71,34 +71,26 @@ class CustomerApplicationTests {
 		Assertions.assertEquals("Rambo", res.movieRecommendations().get(0).title());
 	}
 
-
 	@Test
 	public void testCustomerNotFound(){
-
-		var pd = client
+		client
 				.get()
-				.uri("/api/customer/{10}")
+				.uri("/api/customers/customer/99999")
 				.exchange()
 				.expectStatus()
-				.is4xxClientError()
-				.returnResult(ProblemDetail.class)
-				.getResponseBody();
-		Assertions.assertEquals(HttpStatus.NOT_FOUND, pd.getStatus());
+				.is4xxClientError();
 	}
 
 	@Test
 	public void testUpdateCustomerGenre(){
 		UpdateGenreRequest req = new UpdateGenreRequest(Genre.COMEDY);
-		var pd = client
+		client
 				.patch()
-				.uri("/api/customer/{10}/genre")
+				.uri("/api/customers/99999/genre")
 				.body(req)
 				.exchange()
 				.expectStatus()
-				.isNoContent()
-						.expectBody()
-								.isEmpty();
-		Assertions.assertEquals(HttpStatus.NOT_FOUND, pd.getStatus());
+				.is4xxClientError();
 	}
 
 

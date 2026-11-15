@@ -21,7 +21,7 @@ class TestcontainersConfiguration {
 				.asCompatibleSubstituteFor("postgres");
 		return new PostgreSQLContainer(dockerImage)
 				.withDatabaseName("customer")
-				.withInitScript("init-db.sql");
+				.withInitScript("db-init.sql");
 	}
 
 }
