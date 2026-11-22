@@ -65,11 +65,11 @@ Both services scale on average CPU with a target-tracking policy.
 
 ## Load testing
 
-JMeter ran 200 virtual users sending requests back to back for 20 minutes (ramped up over the first 200 seconds) against `GET /api/customers/customer/1` through CloudFront. Each request goes through the ALB to customer-service and on to movie-service, so both services are exercised. The run on 19 Nov 2026 covered about 930,000 requests with no 5xx responses (and 2 client-side TLS handshake errors). An earlier run on 17 Nov with the same plan gave consistent results: 1.06 million requests at about 1,060 to 1,117 req/s steady state, with no errors.
+JMeter ran 200 virtual users sending requests back to back for 20 minutes (ramped up over the first 200 seconds) against `GET /api/customers/customer/1` through CloudFront. Each request goes through the ALB to customer-service and on to movie-service, so both services are exercised. The main run covered about 930,000 requests with no 5xx responses (and 2 client-side TLS handshake errors). An earlier run with the same plan gave consistent results: 1.06 million requests at about 1,060 to 1,117 req/s steady state, with no errors.
 
 ### Saturation, scale-out, recovery
 
-Both services started the 19 Nov run at 2 tasks. At 200 users that fleet saturated: CPU passed the 70% target and the autoscaling alarms added a third task to each service. The same run, before and after:
+Both services started the main run at 2 tasks. At 200 users that fleet saturated: CPU passed the 70% target and the autoscaling alarms added a third task to each service. The same run, before and after:
 
 | | 2 tasks each (saturated) | 3 tasks each (after scale-out) |
 |---|---|---|
@@ -85,7 +85,7 @@ Windows: 17:29-17:33 (before) and 17:38-17:45 (after); CPU averaged over 17:27-1
 
 CPU crossed the 70% target at 17:27, and the scale-out alarms fired at 17:32 because they require three consecutive minutes above target. customer-service had its third task serving by 17:33. movie-service's first new task missed its 90-second health-check grace period and was replaced, so its third task was serving by 17:36. Latency rose briefly while the new tasks came into service, then settled at the lower levels above. The database and memory had plenty of headroom (RDS CPU peaked at 32%, per-task memory at about 55%). About 17 minutes after the load ended, both services scaled back to 2 tasks.
 
-### Screenshots (19 Nov, about 17:15 to 18:05 IST, 1-minute periods)
+### Screenshots (1-minute periods, times in IST)
 
 ![CPU utilization](docs/images/cpu-utilization-cloudwatch-19.png)
 
@@ -102,7 +102,3 @@ CPU crossed the 70% target at 17:27, and the scale-out alarms fired at 17:32 bec
 ![customer-service p95 response time](docs/images/cloudwatch-alb-targetResponseTime-19-customer.png)
 
 *customer-service p95 response time: about 0.5-0.66 s while saturated, a short peak at 17:33 during the hand-over, and about 0.27-0.31 s after scale-out.*
-
-## Next steps
-
-Terraform for the infrastructure, and resilience controls (timeouts and a circuit breaker) around the call to movie-service.
